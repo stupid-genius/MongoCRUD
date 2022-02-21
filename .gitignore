@@ -1,3 +1,6 @@
-node_modules/
-public/components
-.sass-cache
+*.swp
+.tmp
+node_modules
+bower_components
+build
+dist
