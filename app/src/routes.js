@@ -23,10 +23,10 @@ function parseAuthHeader(authorization = ''){
 // this is the only way to open a connection to the db
 async function authCheck(req, res, next) {
 	const { username, password } = parseAuthHeader(req.headers['authorization']);
-	logger.info(`Authenticating against ${req.params[0]}`);
+	logger.info(`Authenticating against ${req.originalUrl}`);
 
 	if(config.nodeEnv === 'development'){
-		logger.info(`DEVELOPMENT MODE: skipping authentication for ${username}:${password}`);
+		logger.info('DEVELOPMENT MODE: skipping authentication');
 		next();
 	}else{
 		let mc;
@@ -61,10 +61,10 @@ router.get('/', (req, res) => {
 	});
 });
 
-router.post(/\/c\/(\w+)\/(\w+)$/, require('./create'));
-router.get(/\/r\/(\w+)\/(\w+)$/, require('./read'));
-router.put(/\/u\/(\w+)\/(\w+)$/, require('./update'));
-router.delete(/\/d\/(\w+)\/(\w+)$/, require('./delete'));
+router.post(/\/(\w+)\/(\w+)$/, require('./create'));
+router.get(/\/(\w+)\/(\w+)(?:\/(\w{24}))?$/, require('./read'));
+router.put(/\/(\w+)\/(\w+)$/, require('./update'));
+router.delete(/\/(\w+)\/(\w+)(?:\/(\w{24}))?$/, require('./delete'));
 
 module.exports = router;
 
