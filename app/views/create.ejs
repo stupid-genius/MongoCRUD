@@ -1,0 +1,3 @@
+	<td><textarea name="doc"></textarea></td>
+	<td><button hx-post="/ui/create" hx-include="[name='database'],[name='collection'],[name='doc']" hx-target="#dataTable">save</button></td>
+	<td><button hx-get="/ui/read" hx-include="[name='database'],[name='collection']" hx-target="#dataTable">cancel</button></td>

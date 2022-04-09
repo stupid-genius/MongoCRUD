@@ -25,46 +25,49 @@ async function authCheck(req, res, next) {
 	const { username, password } = parseAuthHeader(req.headers['authorization']);
 	logger.info(`Authenticating against ${req.originalUrl}`);
 
-	if(config.nodeEnv === 'development'){
-		logger.info('DEVELOPMENT MODE: skipping authentication');
+	// if(config.nodeEnv === 'development'){
+	// 	logger.info('DEVELOPMENT MODE: skipping authentication');
+	// 	next();
+	// }else{
+	let mc;
+	try{
+		const connString = `mongodb://${username}:${password}@${config.dbHost}/?authMechanism=DEFAULT`;
+		mc = new MongoClient(connString);
+		await mc.connect();
+		await mc.db('admin').command({ ping: 1 });
+		logger.info(`authenticated user ${username}`);
+		req.db = mc;
 		next();
-	}else{
-		let mc;
-		try{
-			const connString = `mongodb://${username}:${password}@${config.dbHost}/?authMechanism=DEFAULT`;
-			mc = new MongoClient(connString);
-			await mc.connect();
-			await mc.db('admin').command({ ping: 1 });
-			logger.info(`authenticated user ${username}`);
-			req.db = mc;
-			next();
-		}catch(err){
-			logger.warn(err);
-			res.status(401);
-			if(username === undefined || password === undefined){
-				res.setHeader('WWW-Authenticate', 'Basic');
-			}
-			res.send('authentication failed');
-			if(mc){
-				await mc.close();
-			}
+	}catch(err){
+		logger.warn(err);
+		res.status(401);
+		if(username === undefined || password === undefined){
+			res.setHeader('WWW-Authenticate', 'Basic');
+		}
+		res.send('authentication failed');
+		if(mc){
+			await mc.close();
 		}
 	}
+	// }
 }
 
 router.use(authCheck);
 router.use(bodyParser.json());
+router.use(bodyParser.urlencoded({extended: true}));
 router.get('/', (req, res) => {
 	res.render('index', {
-		text: 'MongoCRUD UI',
+		data: 'loading',
 		title: config.appDescription
 	});
 });
+router.use('/ui', require('./ui'));
 
-router.post(/\/(\w+)\/(\w+)$/, require('./create'));
-router.get(/\/(\w+)\/(\w+)(?:\/(\w{24}))?$/, require('./read'));
-router.put(/\/(\w+)\/(\w+)$/, require('./update'));
-router.delete(/\/(\w+)\/(\w+)(?:\/(\w{24}))?$/, require('./delete'));
+const dbCollDocPat = /\/(\w+)\/(\w+)(?:\/(\w{24}))?$/;
+router.post(dbCollDocPat, require('./create'));
+router.get(dbCollDocPat, require('./read'));
+router.put(dbCollDocPat, require('./update'));
+router.delete(dbCollDocPat, require('./delete'));
 
 module.exports = router;
 

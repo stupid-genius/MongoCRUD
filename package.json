@@ -52,8 +52,10 @@
 		"dist": "./node_modules/.bin/grunt zip",
 		"docker": "docker build -t mongocrud .",
 		"grunt": "./node_modules/.bin/grunt",
+		"mongo": "docker compose up -d mongo",
 		"nodemon": "npx nodemon app/src/index.js",
-		"start": "NODE_ENV=development ./node_modules/.bin/grunt",
-		"test": "mocha"
+		"start": "npm run mongo; DBHOST=localhost NODE_ENV=development ./node_modules/.bin/grunt",
+		"test": "mocha",
+		"ui-install": "./node_modules/.bin/bower install; ./node_modules/.bin/grunt wiredep"
 	}
 }

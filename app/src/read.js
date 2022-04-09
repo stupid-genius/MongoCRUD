@@ -7,15 +7,15 @@ const logger = new Logger(path.basename(__filename));
 
 module.exports = function(req, res){
 	logger.info(`Read on db: ${req.params[0]}, collection: ${req.params[1]}`);
-	logger.debug(JSON.stringify(req.params));
-	let query = req.query;
+	logger.debug(`query: ${JSON.stringify(req.query)}`);
+	let selector = req.query;
 	if(req.params[2] !== undefined){
-		query = {
+		selector = {
 			_id: ObjectId(req.params[2])
 		};
 	}
-	logger.debug(`query: ${JSON.stringify(query)}`);
-	req.db.db(req.params[0]).collection(req.params[1]).find(query).toArray(function(err, docs){
+	logger.debug(`selector: ${JSON.stringify(selector)}`);
+	req.db.db(req.params[0]).collection(req.params[1]).find(selector).toArray(function(err, result){
 		if(err){
 			logger.error(err);
 			req.db.close();
@@ -23,7 +23,7 @@ module.exports = function(req, res){
 			return;
 		}
 		req.db.close();
-		logger.debug(`successfully found: ${JSON.stringify(docs)}`);
-		res.send(docs);
+		logger.debug(`successfully found: ${JSON.stringify(result)}`);
+		res.send(result);
 	});
 };

@@ -10,6 +10,25 @@ body{
 	display: flex;
 	flex-direction: column;
 }
+table{
+	border: 1px solid black;
+	border-collapse: collapse;
+}
+tr{
+	border: 1px solid black;
+}
+th, td{
+	padding: .25em .75em;
+}
+td > input{
+	/* margin: 0; */
+	height: 100%;
+	width: 98%;
+}
+textarea{
+	height: 185px;
+	width: 492px;
+}
 #header{
 	background: black;
 	border-bottom: lightgreen 1px solid;
@@ -22,13 +41,21 @@ body{
 	margin: 0;
 }
 #main{
-	align-items: center;
+	/* align-items: center; */
 	align-self: center;
 	display: flex;
 	flex: 1 0 auto;
-	font-style: italic;
+	min-height: 200px;
 	padding: 1em;
-	text-align: center;
+	/* text-align: center; */
+	width: 98%;
+}
+#main > div{
+	background-color: lightgray;
+	color: black;
+	margin: 0 auto;
+	padding: 1em;
+	width: 80%;
 }
 #footer{
 	background: black;
@@ -40,5 +67,8 @@ body{
 	position: absolute;
 	text-align: center;
 	width: 100%;
+}
+#dataTable{
+	padding: 1em;
 }
 
