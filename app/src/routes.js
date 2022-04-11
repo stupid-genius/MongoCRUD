@@ -23,7 +23,7 @@ function parseAuthHeader(authorization = ''){
 // this is the only way to open a connection to the db
 async function authCheck(req, res, next) {
 	const { username, password } = parseAuthHeader(req.headers['authorization']);
-	logger.info(`Authenticating against ${req.originalUrl}`);
+	logger.info(`Authenticating access to ${req.originalUrl}`);
 
 	// if(config.nodeEnv === 'development'){
 	// 	logger.info('DEVELOPMENT MODE: skipping authentication');
@@ -32,6 +32,8 @@ async function authCheck(req, res, next) {
 	let mc;
 	try{
 		const connString = `mongodb://${username}:${password}@${config.dbHost}/?authMechanism=DEFAULT`;
+		logger.info(`authenticating against ${connString}`);
+
 		mc = new MongoClient(connString);
 		await mc.connect();
 		await mc.db('admin').command({ ping: 1 });
@@ -62,6 +64,7 @@ router.get('/', (req, res) => {
 	});
 });
 router.use('/ui', require('./ui'));
+// router.use('/users', require('./users'));
 
 const dbCollDocPat = /\/(\w+)\/(\w+)(?:\/(\w{24}))?$/;
 router.post(dbCollDocPat, require('./create'));
