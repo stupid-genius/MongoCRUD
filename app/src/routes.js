@@ -64,7 +64,7 @@ router.get('/', (req, res) => {
 	});
 });
 router.use('/ui', require('./ui'));
-// router.use('/users', require('./users'));
+router.use('/users', require('./users'));
 
 const dbCollDocPat = /\/(\w+)\/(\w+)(?:\/(\w{24}))?$/;
 router.post(dbCollDocPat, require('./create'));

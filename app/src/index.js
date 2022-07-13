@@ -1,24 +1,48 @@
+const cookieParser = require('cookie-parser');
 const express = require('express');
+const session = require('express-session');
 const morgan = require('morgan');
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
+const CookieStrategy = require('passport-cookie');
 const servefavicon = require('serve-favicon');
 const path = require('path');
 const config = require('./config');
 const Logger = require('./logger');
 
-/* eslint-disable-next-line no-undef */
 const logger = new Logger(path.basename(__filename));
 
 const app = express();
 
-/* eslint-disable-next-line no-undef */
+app.use(morgan('common'));
+app.use(cookieParser());
+
+app.use(session({
+	secret: 'correcthorsebatterystaple'
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy((user, pass, done) => {
+	logger.debug(`user: ${user}, pass: ${pass}`);
+	done(user);
+}));
+passport.use(new CookieStrategy((token, done) => {
+	logger.debug('token %o', token);
+	done();
+}));
+
+// app.use(passport.authenticate('local', {session: false}));
+// app.use(passport.authenticate('cookie', {session: false}));
+app.use((req, res, next) => {
+	logger.debug('session %o', req.isAuthenticated());
+	next();
+});
+
 app.set('views', path.join(__dirname, '../views'));
 app.set('view engine', 'ejs');
 
-app.use(morgan('common'));
-/* eslint-disable-next-line no-undef */
 app.use(servefavicon(path.join(__dirname, '../public/images/favicon.ico')));
 app.use(require('./routes'));
-/* eslint-disable-next-line no-undef */
 app.use(express.static(path.join(__dirname, '../public')));
 
 app.use((req, res, next) => {
