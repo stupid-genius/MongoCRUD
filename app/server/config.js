@@ -7,6 +7,7 @@ module.exports = Object.freeze({
 	dbHost: process.env.DBHOST || 'mongo',
 	dbPort: process.env.DBPORT || 27017,
 	logFile: process.env.LOGFILE || 'app.log',
-	logLevel: process.env.LOGLEVEL || (process.env.NODE_ENV==='development'?'debug':'info'),
+	logLevel: process.env.LOGLEVEL || (process.env.NODE_ENV==='production'?'info':'debug'),
 	nodeEnv: process.env.NODE_ENV || 'not set'
 });
+

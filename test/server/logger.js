@@ -5,7 +5,7 @@ const chai = require('chai');
 const path = require('path');
 const { PassThrough } = require('stream');
 const { transports } = require('winston');
-const Logger = require('../app/src/logger');
+const Logger = require('../../dist/server/logger');
 
 /* eslint-disable-next-line no-unused-vars */
 const should = chai.should();

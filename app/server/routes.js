@@ -1,5 +1,3 @@
-const bodyParser = require('body-parser');
-const { Buffer } = require('buffer');
 const express = require('express');
 const MongoClient = require('mongodb').MongoClient;
 const path = require('path');
@@ -11,7 +9,7 @@ const logger = new Logger(path.basename(__filename));
 const router = express.Router();
 
 function parseAuthHeader(authorization = ''){
-	let token = authorization.split(/\s+/).pop()||'',
+	const token = authorization.split(/\s+/).pop()||'',
 		auth = Buffer.from(token, 'base64').toString(),
 		parts = auth.split(/:/);
 	return {
@@ -55,9 +53,10 @@ async function authCheck(req, res, next) {
 }
 
 router.use(authCheck);
+const bodyParser = require('body-parser');
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({extended: true}));
-router.get('/', (req, res) => {
+router.get('/', (_req, res) => {
 	res.render('index', {
 		data: 'loading',
 		title: config.appDescription

@@ -11,15 +11,15 @@ const logger = new Logger(path.basename(__filename));
 const app = express();
 
 /* eslint-disable-next-line no-undef */
-app.set('views', path.join(__dirname, '../views'));
+app.set('views', path.join(__dirname, './views'));
 app.set('view engine', 'ejs');
 
 app.use(morgan('common'));
 /* eslint-disable-next-line no-undef */
-app.use(servefavicon(path.join(__dirname, '../public/images/favicon.ico')));
+app.use(servefavicon(path.join(__dirname, '../client/favicon.ico')));
 app.use(require('./routes'));
 /* eslint-disable-next-line no-undef */
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, '../client')));
 
 app.use((req, res, next) => {
 	const err = new Error('Not Found');
