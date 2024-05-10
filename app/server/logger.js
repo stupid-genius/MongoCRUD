@@ -1,7 +1,7 @@
 const config = require('./config');
 const {createLogger, format, transports, Transport} = require('winston');
 
-const {align, colorize, combine, label, metadata, printf, timestamp} = format;
+const {align, colorize, combine, label, metadata, printf, splat, timestamp} = format;
 
 function Logger(fileName, customMetadata = {}){
 	if (fileName === undefined) {
@@ -14,6 +14,7 @@ function Logger(fileName, customMetadata = {}){
 	if(Logger.instance === undefined){
 		const types = {};
 		const stdFormat = combine(
+			splat(),
 			// metadata(),
 			// metadata({ fillWith: ['fileName'].concat(Object.keys(customMetadata)) }),
 			metadata({ fillWith: Object.keys(customMetadata) }),

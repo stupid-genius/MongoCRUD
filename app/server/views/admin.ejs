@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title><%- title %></title>
+		<% include bundle %>
+	</head>
+	<body>
+		<section id="header">
+			<% include header %>
+		</section>
+
+		<section id="main">
+			<div>
+				<div id="new-user">
+					<span>Username:</span><input type="text" id="newUsername" name="username" />&nbsp;
+					<span>Password:</span><input type="password" id="newPassword" name="password" />
+					<button hx-post="/users/add" hx-include="[name='username'],[name='password']" hx-target="#dataTable">Add</button>
+				</div>
+				<div id="dataTable">
+					<table>
+						<% for(let i=0; i<rows.length; ++i){ %>
+						<tr id="row<%- i %>">
+							<% for(let field in rows[i]){ %>
+							<th><%= field %>:</th><td><%= rows[i][field] %></td>
+							<% } %>
+							<td><button hx-post="/users/edit/<%- rows[i].username %>" hx-target="closest tr">edit</button></td>
+							<td><button hx-delete="/users/delete/<%- rows[i].username %>" hx-target="closest tr" hx-swap="delete" hx-confirm="Delete?">delete</button></td>
+						</tr>
+						<% } %>
+					</table>
+				</div>
+			</div>
+		</section>
+
+		<section id="footer">
+			<% include footer %>
+		</section>
+	</body>
+</html>
+

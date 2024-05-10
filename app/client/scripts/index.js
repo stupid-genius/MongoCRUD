@@ -1,1 +1,1 @@
-console.log('MongoCRUD');
+require('htmx.org');

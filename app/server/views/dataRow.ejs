@@ -1,5 +1,5 @@
 	<% for(let field in row){ %>
 	<th><%= field %>:</th><td><%= row[field] %></td>
 	<% } %>
-	<td><button hx-post="/ui/edit/<%- row._id %>" hx-include="[name='database'],[name='collection']" hx-target="closest tr">edit</button></td>
-	<td><button hx-delete="/ui/delete/<%- row._id %>" hx-include="[name='database'],[name='collection']" hx-target="closest tr" hx-swap="delete">delete</button></td>
+	<td><button hx-post="<%= baseURL %>/edit/<%- id %>" hx-include="[name='database'],[name='collection']" hx-target="closest tr">edit</button></td>
+	<td><button hx-delete="<%= baseURL %>/delete/<%- id %>" hx-include="[name='database'],[name='collection']" hx-target="closest tr" hx-swap="delete">delete</button></td>

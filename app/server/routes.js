@@ -1,5 +1,4 @@
 const express = require('express');
-const MongoClient = require('mongodb').MongoClient;
 const path = require('path');
 const config = require('./config');
 const Logger = require('./logger');
@@ -8,62 +7,37 @@ const Logger = require('./logger');
 const logger = new Logger(path.basename(__filename));
 const router = express.Router();
 
-function parseAuthHeader(authorization = ''){
-	const token = authorization.split(/\s+/).pop()||'',
-		auth = Buffer.from(token, 'base64').toString(),
-		parts = auth.split(/:/);
-	return {
-		username: parts[0],
-		password: parts[1]
-	};
-}
-
-// this is the only way to open a connection to the db
-async function authCheck(req, res, next) {
-	const { username, password } = parseAuthHeader(req.headers['authorization']);
-	logger.info(`Authenticating access to ${req.originalUrl}`);
-
-	// if(config.nodeEnv === 'development'){
-	// 	logger.info('DEVELOPMENT MODE: skipping authentication');
-	// 	next();
-	// }else{
-	let mc;
-	try{
-		const connString = `mongodb://${username}:${password}@${config.dbHost}/?authMechanism=DEFAULT`;
-		logger.info(`authenticating against ${connString}`);
-
-		mc = new MongoClient(connString);
-		await mc.connect();
-		await mc.db('admin').command({ ping: 1 });
-		logger.info(`authenticated user ${username}`);
-		req.db = mc;
-		next();
-	}catch(err){
-		logger.warn(err);
-		res.status(401);
-		if(username === undefined || password === undefined){
-			res.setHeader('WWW-Authenticate', 'Basic');
-		}
-		res.send('authentication failed');
-		if(mc){
-			await mc.close();
-		}
-	}
-	// }
-}
-
-router.use(authCheck);
-const bodyParser = require('body-parser');
-router.use(bodyParser.json());
-router.use(bodyParser.urlencoded({extended: true}));
-router.get('/', (_req, res) => {
+router.get('/', async (req, res) => {
+	const data = [];
+	const adminDb = req.user.db.db('admin');
+	const dbs = await adminDb.admin().listDatabases();
+	const promises = dbs.databases.map(async (db) => {
+		// Get a list of collections for each database
+		const currentDb = req.user.db.db(db.name);
+		const collections = await currentDb.listCollections().toArray();
+		data.push(`<div>${db.name} - Collections:</div>`);
+		collections.forEach((collection) => {
+			data.push(`<div>    - ${collection.name}</div>`);
+		});
+	});
+	await Promise.all(promises);
+	logger.debug(data);
 	res.render('index', {
-		data: 'loading',
+		data: data.join('<br />'),
 		title: config.appDescription
 	});
 });
+router.post('/login');
+router.use('/logout', (req, res, next) => {
+	req.logout((err) => {
+		if(err){
+			return next(err);
+		}
+		res.redirect('/');
+	});
+});
 router.use('/ui', require('./ui'));
-// router.use('/users', require('./users'));
+router.use('/users', require('./users'));
 
 const dbCollDocPat = /\/(\w+)\/(\w+)(?:\/(\w{24}))?$/;
 router.post(dbCollDocPat, require('./create'));

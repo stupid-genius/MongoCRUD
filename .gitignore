@@ -1,4 +1,5 @@
 *.swp
+*.vim
 .tmp
 .idea
 node_modules

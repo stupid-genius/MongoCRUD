@@ -15,14 +15,14 @@ module.exports = function(req, res){
 		};
 	}
 	logger.debug(`selector: ${JSON.stringify(selector)}`);
-	req.db.db(req.params[0]).collection(req.params[1]).find(selector).toArray(function(err, result){
+	req.user.db.db(req.params[0]).collection(req.params[1]).find(selector).toArray(function(err, result){
 		if(err){
 			logger.error(err);
-			req.db.close();
+			req.user.db.close();
 			res.end();
 			return;
 		}
-		req.db.close();
+		req.user.db.close();
 		logger.debug(`successfully found: ${JSON.stringify(result)}`);
 		res.send(result);
 	});

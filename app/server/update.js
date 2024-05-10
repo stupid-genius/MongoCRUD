@@ -16,12 +16,12 @@ module.exports = function(req, res){
 	}
 	logger.debug(`selector: ${JSON.stringify(selector)}`);
 	// http://docs.mongodb.org/manual/reference/method/db.collection.update/#examples
-	// req.db.db(req.params[0]).collection(req.params[1]).updateOne(req.body[0], {$set: req.body[1]}, req.body[2], function(err, result){
-	req.db.db(req.params[0]).collection(req.params[1]).replaceOne(selector, req.body.doc, {upsert: true}, function(err, result){
+	// req.user.db.db(req.params[0]).collection(req.params[1]).updateOne(req.body[0], {$set: req.body[1]}, req.body[2], function(err, result){
+	req.user.db.db(req.params[0]).collection(req.params[1]).replaceOne(selector, req.body.doc, {upsert: true}, function(err, result){
 		if(err){
 			logger.error(err);
 		}
-		req.db.close();
+		req.user.db.close();
 		logger.debug(`successfully updated: ${JSON.stringify(result)}`);
 		res.send(result);
 	});
