@@ -3,6 +3,19 @@ services:
   api:
     build: .
     restart: always
+    environment:
+      APPHOST: ${APPHOST}
+      APPPORT: ${APPPORT}
+      APPURL: ${APPURL}
+      AUTH_STRATEGY: ${AUTH_STRATEGY}
+      DBHOST: ${DBHOST}
+      DBPORT: ${DBPORT}
+      DB_ROOT_PASSWD: ${DB_ROOT_PASSWD}
+      LOGFILE: ${LOGFILE}
+      LOGLEVEL: ${LOGLEVEL}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID}
+      OIDC_PROVIDER_URL: ${OIDC_PROVIDER_URL}
+      SESSION_SECRET: ${SESSION_SECRET}
     depends_on:
       - mongo
   mongo:

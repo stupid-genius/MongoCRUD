@@ -48,11 +48,10 @@ case 'local':
 				name: username
 			});
 		}catch(e){
-			logger.warn(`Failed to authenticate ${username}`);
-			return done(e);
+			logger.warn(`Failed to authenticate ${username}: ${e}`);
+			return done(null, false);
 		}
-	}
-	);
+	});
 	passport.use(strategy);
 	authenticateRequest = function(req, res, next){
 		logger.debug(`Checking auth for request ${req.url}`);
@@ -61,8 +60,35 @@ case 'local':
 			next();
 		}else{
 			passport.authenticate(strategyName, {
-				failureRedirect: '/login.html',
-				successRedirect: '/'
+				failureFlash: true,
+				failureMessage: true
+				// failureRedirect: '/login.html',
+				// successRedirect: '/'
+			}, (err, user, info) => {
+				if(info !== undefined){
+					logger.info(JSON.stringify(info, null, 2));
+				}
+				if(!user){
+					logger.warn('Not authenticated');
+					res.status(401);
+					if(req.headers?.['accept'] === 'application/json; q=0'){
+						return res.end();
+					}else{
+						return res.redirect('/login.html');
+					}
+				}
+				if(err){
+					logger.error(err);
+					return next(err);
+				}
+				if(req.headers?.['accept'] === 'application/json; q=0'){
+					req.login(user, next);
+					return;
+				}else{
+					req.login(user, () => {
+						res.redirect('/');
+					});
+				}
 			})(req, res, next);
 		}
 	};
@@ -71,8 +97,7 @@ case 'local':
 
 passport.serializeUser((user, done) => {
 	/* eslint-disable-next-line no-unused-vars */
-	const { db, ...serializable } = user;
-	// logger.debug(`Serializing user ${JSON.stringify(user, (k,v) => k==='password'?undefined:v,2)}`);
+	const { db, password, ...serializable } = user;
 	logger.debug(`Serializing user ${JSON.stringify(serializable)}`);
 	done(null, serializable);
 });

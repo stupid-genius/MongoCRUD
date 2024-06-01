@@ -27,7 +27,9 @@ router.get('/', async (req, res) => {
 		title: config.appDescription
 	});
 });
-router.post('/login');
+router.post('/login', (_req, res) => {
+	res.status(204).end();
+});
 router.use('/logout', (req, res, next) => {
 	req.logout((err) => {
 		if(err){

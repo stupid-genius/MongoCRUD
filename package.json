@@ -19,6 +19,7 @@
 		"express-openid-connect": "^2.17.1",
 		"express-session": "^1.18.0",
 		"htmx.org": "^1.9.12",
+		"log-ng": "github:stupid-genius/log-ng",
 		"memorystore": "^1.6.7",
 		"mongodb": "^4.3.1",
 		"morgan": "^1.10.0",
@@ -41,15 +42,16 @@
 		"mocha": "^9.2.2"
 	},
 	"scripts": {
+		"app": "npm run build; docker compose up --build; docker compose down",
 		"build": "npm run clean; ./build.sh",
 		"clean": "rm -rf dist",
 		"container": "docker run --name mongocrud -p80:3000 --rm mongocrud",
-		"docker": "docker build -t webapptemplate .",
 		"esbuild": "esbuild",
+		"image": "docker build -t webapptemplate .",
 		"mongo": "docker compose up -d mongo --build",
 		"nodemon": "npx nodemon dist/server/index.js",
 		"package": "mkdir -p package; cd dist; npm pack --pack-destination='../package/'",
-		"start": "NODE_ENV=development ./serve.sh",
+		"start": "DBHOST=localhost NODE_ENV=development ./serve.sh",
 		"test": "mocha test/server && karma start"
 	}
 }

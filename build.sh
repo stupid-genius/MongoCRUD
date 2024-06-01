@@ -15,4 +15,6 @@ cp app/client/* dist/client/ 2> /dev/null || :
 if [ -d "app/client/images" ] && [ -n "app/client/images/*" ]; then
    cp -R app/client/images dist/client/
 fi
+jq '{name: .name, description: .description, version: .version, dependencies: .dependencies}' package.json > dist/package.json
+cp package-lock.json .env dist/
 echo Build complete

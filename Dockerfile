@@ -1,8 +1,7 @@
 FROM node:gallium-alpine
 WORKDIR /opt/mongocrud
 ENV NODE_ENV=production
-COPY build/ .
-RUN npm i
+COPY dist/ serve.sh .
+RUN npm ci
 EXPOSE 3000
-CMD ["npm", "start"]
-
+CMD ["sh", "serve.sh"]
