@@ -1,4 +1,5 @@
 const OIDC = require('express-openid-connect').auth;
+const Logger = require('log-ng');
 const requiresAuth = require('express-openid-connect').requiresAuth;
 const passport = require('passport');
 const path = require('path');
@@ -6,9 +7,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const MongoClient = require('mongodb').MongoClient;
 const app = require('./app');
 const config = require('./config');
-const Logger = require('./logger');
 
-/* eslint-disable-next-line no-undef */
 const logger = new Logger(path.basename(__filename));
 
 let strategy, strategyName;

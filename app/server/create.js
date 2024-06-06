@@ -1,4 +1,4 @@
-const Logger = require('./logger');
+const Logger = require('log-ng');
 const path = require('path');
 
 /* eslint-disable-next-line no-undef */

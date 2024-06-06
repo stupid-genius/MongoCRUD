@@ -1,5 +1,7 @@
+const app = require('./app');
 const bodyParser = require('body-parser');
 const express = require('express');
+const Logger = require('log-ng');
 const SessionManager = require('express-session');
 const MemoryStore = require('memorystore')(SessionManager);
 const morgan = require('morgan');
@@ -7,12 +9,9 @@ const servefavicon = require('serve-favicon');
 const passport = require('passport');
 const path = require('path');
 const config = require('./config');
-const Logger = require('./logger');
 
-// Logger(config);
 const logger = new Logger(path.basename(__filename));
 
-const app = require('./app');
 const { authenticateRequest } = require('./auth');
 
 app.set('views', path.join(__dirname, './views'));

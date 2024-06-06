@@ -1,5 +1,5 @@
+const Logger = require('log-ng');
 const path = require('path');
-const Logger = require('./logger');
 
 /* eslint-disable-next-line no-undef */
 const logger = new Logger(path.basename(__filename));
@@ -19,6 +19,7 @@ function arraysEqual(arr1, arr2){
 		return false;
 	});
 }
+
 function objectsEqual(obj1, obj2){
 	const obj1Keys = Object.keys(obj1).sort();
 	const obj2Keys = Object.keys(obj2).sort();
@@ -59,6 +60,7 @@ function docsExecutor(res, rej, err, docs){
 	// }));
 	res(docs);
 }
+
 function getUsers(db, userId){
 	return new Promise((res, rej) => {
 		const executor = docsExecutor.bind(null, res, rej);
@@ -72,8 +74,97 @@ function getUsers(db, userId){
 	});
 }
 
+function parseValue(value){
+	if(!isNaN(value)){
+		return Number(value);
+	}
+	if(value === 'true'){
+		return true;
+	}
+	if(value === 'false'){
+		return false;
+	}
+	return value;
+}
+
+function parseArray(value){
+	return value.split(/,/).map(item => parseValue(item.trim()));
+}
+
+function parseLogicalOperator(operator, field, value){
+	logger.debug(`parsing logical operator: ${operator} on field: ${field} with value: ${value}`);
+	const terms = value.split(';').map(queryTerm => {
+		const [queryKey, queryValue] = queryTerm.split('=');
+		const [field, operator] = queryKey.split('__');
+		return applyOperator(operator, field, queryValue);
+	});
+	return {[operator]: terms};
+}
+
+const operatorHandlers = {
+	'and': parseLogicalOperator.bind(null, '$and'),
+	'exists': (field, value) => ({[field]: {$exists: value === 'true'}}),
+	'gt': (field, value) => ({[field]: {$gt: Number(value)}}),
+	'gte': (field, value) => ({[field]: {$gte: Number(value)}}),
+	'in': (field, value) => ({[field]: {$in: parseArray(value)}}),
+	'lt': (field, value) => ({[field]: {$lt: Number(value)}}),
+	'lte': (field, value) => ({[field]: {$lte: Number(value)}}),
+	'ne': (field, value) => ({[field]: {$ne: parseValue(value)}}),
+	'nin': (field, value) => ({[field]: {$nin: parseArray(value)}}),
+	'or': parseLogicalOperator.bind(null, '$or'),
+	'regex': (field, value) => ({[field]: {$regex: value}})
+};
+
+function applyOperator(operator, field, value){
+	logger.debug(`applying operator: ${operator} to field: ${field} with value: ${value}`);
+	if(operator && operatorHandlers[operator]){
+		return operatorHandlers[operator](field, value);
+	}else{
+		return {
+			[field]: parseValue(value)
+		};
+	}
+}
+
+/**
+ * Parse query string for MongoDB query operators
+ * @example
+ * /users?username=john_doe
+ * /users?age__gt=20&experience__gte=5
+ * /users?role__in=user,moderator&role__nin=admin,superuser
+ * /users?email__exists=true
+ * /users?__and=age__gt=20;experience__gte=5
+ * /users?__or=role__in=user,moderator;department__eq=engineering
+ * /users?username__regex=^john
+ */
+function parseMongoQuery(req, _res, next){
+	logger.debug(`parsing query: ${JSON.stringify(req.query)}`);
+	req.mongoQuery = Object.keys(req.query)
+		.filter((key) => Object.prototype.hasOwnProperty.call(req.query, key))
+		.reduce((query, key) => {
+			logger.debug(`key: ${key}, query: ${JSON.stringify(query)}`);
+			if(Object.prototype.hasOwnProperty.call(req.query, key)){
+				const [field, operator] = key.split('__');
+				logger.debug(`field: ${field}, operator: ${operator}`);
+				const operatorResult = applyOperator(operator, field, req.query[key]);
+				logger.debug(`operatorResult: ${JSON.stringify(operatorResult)}`);
+				const resultField = field || `$${operator}`;
+				if(query[resultField]){
+					query[resultField] = {...query[resultField], ...operatorResult[resultField]};
+				}else{
+					query[resultField] = operatorResult[resultField];
+				}
+			}
+			logger.debug(`query: ${JSON.stringify(query)}`);
+			return query;
+		}, {});
+	logger.debug(`parsed query: ${JSON.stringify(req.mongoQuery)}`);
+	next();
+}
+
 module.exports = {
 	arraysEqual,
 	objectsEqual,
-	getUsers
+	getUsers,
+	parseMongoQuery
 };

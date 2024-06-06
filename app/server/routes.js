@@ -1,7 +1,8 @@
 const express = require('express');
+const Logger = require('log-ng');
 const path = require('path');
 const config = require('./config');
-const Logger = require('./logger');
+const { parseMongoQuery } = require('./routeHelpers');
 
 /* eslint-disable-next-line no-undef */
 const logger = new Logger(path.basename(__filename));
@@ -42,10 +43,10 @@ router.use('/ui', require('./ui'));
 router.use('/users', require('./users'));
 
 const dbCollDocPat = /\/(\w+)\/(\w+)(?:\/(\w{24}))?$/;
-router.post(dbCollDocPat, require('./create'));
-router.get(dbCollDocPat, require('./read'));
-router.put(dbCollDocPat, require('./update'));
-router.delete(dbCollDocPat, require('./delete'));
+router.post(dbCollDocPat, parseMongoQuery, require('./create'));
+router.get(dbCollDocPat, parseMongoQuery, require('./read'));
+router.put(dbCollDocPat, parseMongoQuery, require('./update'));
+router.delete(dbCollDocPat, parseMongoQuery, require('./delete'));
 
 module.exports = router;
 
