@@ -2,9 +2,8 @@ const express = require('express');
 const Logger = require('log-ng');
 const path = require('path');
 const config = require('./config');
-const { parseMongoQuery } = require('./routeHelpers');
+const { parseDBCollDoc, parseMongoQuery } = require('./routeHelpers');
 
-/* eslint-disable-next-line no-undef */
 const logger = new Logger(path.basename(__filename));
 const router = express.Router();
 
@@ -13,7 +12,6 @@ router.get('/', async (req, res) => {
 	const adminDb = req.user.db.db('admin');
 	const dbs = await adminDb.admin().listDatabases();
 	const promises = dbs.databases.map(async (db) => {
-		// Get a list of collections for each database
 		const currentDb = req.user.db.db(db.name);
 		const collections = await currentDb.listCollections().toArray();
 		data.push(`<div>${db.name} - Collections:</div>`);
@@ -42,11 +40,15 @@ router.use('/logout', (req, res, next) => {
 router.use('/ui', require('./ui'));
 router.use('/users', require('./users'));
 
+const docRouter = express.Router({ mergeParams: true});
+docRouter.route('/')
+	.post(require('./create'))
+	.get(require('./read'))
+	.put(require('./update'))
+	.delete(require('./delete'));
+// https://regex101.com/r/KorNfo/2
 const dbCollDocPat = /\/(\w+)\/(\w+)(?:\/(\w{24}))?$/;
-router.post(dbCollDocPat, parseMongoQuery, require('./create'));
-router.get(dbCollDocPat, parseMongoQuery, require('./read'));
-router.put(dbCollDocPat, parseMongoQuery, require('./update'));
-router.delete(dbCollDocPat, parseMongoQuery, require('./delete'));
+router.use(dbCollDocPat, parseDBCollDoc, parseMongoQuery, docRouter);
 
 module.exports = router;
 

@@ -51,7 +51,7 @@ case 'local':
 			return done(null, false);
 		}
 	});
-	passport.use(strategy);
+	passport.use(strategyName, strategy);
 	authenticateRequest = function(req, res, next){
 		logger.debug(`Checking auth for request ${req.url}`);
 		if(req.isAuthenticated()){
@@ -65,7 +65,7 @@ case 'local':
 				// successRedirect: '/'
 			}, (err, user, info) => {
 				if(info !== undefined){
-					logger.info(JSON.stringify(info, null, 2));
+					logger.info(info.message);
 				}
 				if(!user){
 					logger.warn('Not authenticated');
@@ -82,7 +82,6 @@ case 'local':
 				}
 				if(req.headers?.['accept'] === 'application/json; q=0'){
 					req.login(user, next);
-					return;
 				}else{
 					req.login(user, () => {
 						res.redirect('/');

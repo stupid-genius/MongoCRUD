@@ -1,7 +1,6 @@
 const Logger = require('log-ng');
 const path = require('path');
 
-/* eslint-disable-next-line no-undef */
 const logger = new Logger(path.basename(__filename));
 
 function arraysEqual(arr1, arr2){
@@ -112,7 +111,8 @@ const operatorHandlers = {
 	'ne': (field, value) => ({[field]: {$ne: parseValue(value)}}),
 	'nin': (field, value) => ({[field]: {$nin: parseArray(value)}}),
 	'or': parseLogicalOperator.bind(null, '$or'),
-	'regex': (field, value) => ({[field]: {$regex: value}})
+	'regex': (field, value) => ({[field]: {$regex: value}}),
+	'mongo': (_field, value) => decodeURIComponent(value)
 };
 
 function applyOperator(operator, field, value){
@@ -138,8 +138,9 @@ function applyOperator(operator, field, value){
  * /users?username__regex=^john
  */
 function parseMongoQuery(req, _res, next){
-	logger.debug(`parsing query: ${JSON.stringify(req.query)}`);
-	req.mongoQuery = Object.keys(req.query)
+	const query = decodeURIComponent(JSON.stringify(req.query));
+	logger.debug(`parsing query: ${query}`);
+	req.mongoQuery = Object.keys(JSON.parse(query))
 		.filter((key) => Object.prototype.hasOwnProperty.call(req.query, key))
 		.reduce((query, key) => {
 			logger.debug(`key: ${key}, query: ${JSON.stringify(query)}`);
@@ -162,9 +163,18 @@ function parseMongoQuery(req, _res, next){
 	next();
 }
 
+function parseDBCollDoc(req, _res, next){
+	logger.debug(`parsing db: ${req.params[0]}, collection: ${req.params[1]}, doc: ${req.params[2]}`);
+	req.db = req.params[0];
+	req.collection = req.params[1];
+	req.id = req.params[2];
+	next();
+}
+
 module.exports = {
 	arraysEqual,
-	objectsEqual,
 	getUsers,
+	objectsEqual,
+	parseDBCollDoc,
 	parseMongoQuery
 };

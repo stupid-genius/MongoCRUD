@@ -2,20 +2,20 @@ const { ObjectId } = require('mongodb');
 const Logger = require('log-ng');
 const path = require('path');
 
-/* eslint-disable-next-line no-undef */
 const logger = new Logger(path.basename(__filename));
 
 module.exports = function(req, res){
-	logger.info(`Read on db: ${req.params[0]}, collection: ${req.params[1]}`);
-	logger.debug(`query: ${JSON.stringify(req.query)}`);
-	let selector = req.query;
-	if(req.params[2] !== undefined){
+	const { db, collection, id } = req;
+	logger.info(`Read on db: ${db}, collection: ${collection}, id: ${id}`);
+	logger.info(`query: ${JSON.stringify(req.mongoQuery)}`);
+	let selector = req.mongoQuery;
+	if(id !== undefined){
 		selector = {
-			_id: ObjectId(req.params[2])
+			_id: ObjectId(id)
 		};
 	}
 	logger.debug(`selector: ${JSON.stringify(selector)}`);
-	req.user.db.db(req.params[0]).collection(req.params[1]).find(selector).toArray(function(err, result){
+	req.user.db.db(db).collection(collection).find(selector).toArray(function(err, result){
 		if(err){
 			logger.error(err);
 			req.user.db.close();

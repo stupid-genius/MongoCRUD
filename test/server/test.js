@@ -2,10 +2,10 @@ require('../../app/server/app');
 const chai = require('chai');
 const httpMocks = require('node-mocks-http');
 const Logger = require('log-ng');
-Logger.setLogLevel('error');
 // const path = require('path');
 const {parseMongoQuery} = require('../../app/server/routeHelpers');
 
+Logger.setLogLevel('error');
 const expect = chai.expect;
 // const logger = new Logger(path.basename(__filename));
 
@@ -165,13 +165,59 @@ describe('RouteHelper Unit Tests', function(){
 				method: 'GET',
 				url: '/users',
 				query: {
-					'username__regex': '^john'
+					'username__regex': '^john',
+					'role__regex': 'grand.+'
 				}
 			});
 			const res = httpMocks.createResponse();
 			parseMongoQuery(req, res, () => {
 				expect(req.mongoQuery).to.deep.equal({
-					username: {$regex: '^john'}
+					username: {$regex: '^john'},
+					role: {$regex: 'grand.+'}
+				});
+				done();
+			});
+		});
+
+		it('should correctly parse all operators', function(done){
+			const req = httpMocks.createRequest({
+				method: 'GET',
+				url: '/users',
+				query: {
+					'username': 'john_doe',
+					'age': '25',
+					'isActive': 'true',
+					'age__gt': '20',
+					'age__lt': '30',
+					'experience__gte': '5',
+					'experience__lte': '10',
+					'role__ne': 'manager',
+					'role__in': 'user,moderator',
+					'role__nin': 'admin,superuser',
+					'email__exists': 'true',
+					'__and': 'age__gt=20;experience__gte=5',
+					'__or': 'role__in=user,moderator;department__eq=engineering',
+					'manager__regex': '^bill'
+				}
+			});
+			const res = httpMocks.createResponse();
+			parseMongoQuery(req, res, () => {
+				expect(req.mongoQuery).to.deep.equal({
+					username: 'john_doe',
+					age: {$gt: 20, $lt: 30},
+					experience: {$gte: 5, $lte: 10},
+					role: {$ne: 'manager', $in: ['user', 'moderator'], $nin: ['admin', 'superuser']},
+					email: {$exists: true},
+					$and: [
+						{age: {$gt: 20}},
+						{experience: {$gte: 5}}
+					],
+					$or: [
+						{role: {$in: ['user', 'moderator']}},
+						{department: 'engineering'}
+					],
+					isActive: true,
+					manager: {$regex: '^bill'}
 				});
 				done();
 			});
