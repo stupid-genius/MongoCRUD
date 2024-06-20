@@ -42,7 +42,7 @@ router.get('/', (req, res) => {
 		return;
 	});
 });
-router.post('/add', async (req, res) => {
+router.post('/', async (req, res) => {
 	logger.info(`Adding user: ${req.body.username}`);
 	const {username, password} = req.body;
 	try{
@@ -76,7 +76,8 @@ router.post('/add', async (req, res) => {
 		res.status(500).send(e);
 	}
 });
-router.post('/edit/:id', (req, res) => {
+// for UI; maybe use accept header and merge
+router.put('/edit/:id', (req, res) => {
 	logger.info(`Editing user: ${req.params.id}`);
 	getUsers(req.user.db, req.params.id).then((user) => {
 		const context = {
@@ -93,7 +94,7 @@ router.post('/edit/:id', (req, res) => {
 		req.user.db.close();
 	});
 });
-router.put('/update/:id', (req, res) => {
+router.put('/:id', (req, res) => {
 	const userId = req.params.id;
 	logger.info(`Updating user: ${userId}`);
 	logger.debug(`with updates: ${JSON.stringify(req.body)}`);
@@ -167,7 +168,7 @@ router.put('/update/:id', (req, res) => {
 		return;
 	});
 });
-router.delete('/delete/:username', async (req, res) => {
+router.delete('/:username', async (req, res) => {
 	const username = req.params.username;
 	logger.info(`Removing user: ${username}`);
 	try{

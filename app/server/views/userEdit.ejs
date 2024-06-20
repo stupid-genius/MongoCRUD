@@ -2,5 +2,5 @@
 	<th>database: </th><td><input type="text" name="database" value="<%= database %>" /></td>
 	<th>roles: </th><td><input type="text" name="roles" value="<%= roles %>" /></td>
 	<th>password: </th><td><input type="password" name="pwd" value="" /></td>
-	<td><button hx-put="/users/update/<%= username %>" hx-include="[name='database'],[name='pwd'],[name='roles']" hx-target="closest tr">save</button></td>
+	<td><button hx-put="/users/<%= username %>" hx-include="[name='database'],[name='pwd'],[name='roles']" hx-target="closest tr">save</button></td>
 	<td><button hx-get="/users" hx-headers='{"x-ui":"list-only"}' hx-target="#dataTable">cancel</button></td>

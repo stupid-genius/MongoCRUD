@@ -49,7 +49,7 @@ router.post('/create', (req, res) => {
 		res.status(500).send(e);
 	}
 });
-router.get('/read', async (req, res) => {
+router.get('/read', (req, res) => {
 	logger.info(`Read on db: ${req.query.database}, collection: ${req.query.collection}`);
 	req.user.db.db(req.query.database).collection(req.query.collection).find({}).toArray(function(err, docs){
 		if(err){

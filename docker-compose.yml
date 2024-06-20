@@ -21,6 +21,8 @@ services:
   mongo:
     build: db
     restart: always
+    volumes:
+      - mongo-data:/data/db
   nginx:
     build: nginx
     restart: always
@@ -30,3 +32,5 @@ services:
     depends_on:
       - api
 
+volumes:
+  mongo-data:
