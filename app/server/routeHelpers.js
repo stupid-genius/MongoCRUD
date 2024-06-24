@@ -44,6 +44,17 @@ function objectsEqual(obj1, obj2){
 	});
 }
 
+// not sure this is the right approach
+function filterAdmin(req, res, next){
+	if(req.body.database === 'admin'){
+		const msg = 'CRUD directly on admin not allowed';
+		logger.warn(msg);
+		res.status(403).end(msg);
+		return;
+	}
+	next();
+}
+
 function docsExecutor(res, rej, err, docs){
 	// logger.debug(...arguments);
 	if(err){
@@ -173,6 +184,7 @@ function parseDBCollDoc(req, _res, next){
 
 module.exports = {
 	arraysEqual,
+	filterAdmin,
 	getUsers,
 	objectsEqual,
 	parseDBCollDoc,

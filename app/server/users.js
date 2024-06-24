@@ -11,9 +11,16 @@ const {
 const logger = new Logger(path.basename(__filename));
 const router = express.Router();
 
-router.get('/', (req, res) => {
-	logger.debug('getting users');
-	getUsers(req.user.db).then((results) => {
+router.get('/:id?', (req, res) => {
+	logger.debug(`getting ${req.params.id ? req.params.id : 'all users'}`);
+	getUsers(req.user.db, req.params.id).then((results) => {
+		logger.debug(`found ${JSON.stringify(results)}`);
+		if(results === null){
+			results = [];
+		}
+		if(!Array.isArray(results)){
+			results = [results];
+		}
 		const users = results.filter(() => true)
 			.map((rec) => ({
 				username: rec.user,
@@ -168,12 +175,12 @@ router.put('/:id', (req, res) => {
 		return;
 	});
 });
-router.delete('/:username', async (req, res) => {
-	const username = req.params.username;
-	logger.info(`Removing user: ${username}`);
+router.delete('/:id', async (req, res) => {
+	const id = req.params.id;
+	logger.info(`Removing user: ${id}`);
 	try{
 		const adminDb = req.user.db.db('admin');
-		const result = await adminDb.removeUser(username);
+		const result = await adminDb.removeUser(id);
 		req.user.db.close();
 		logger.debug(JSON.stringify(result));
 		res.send();

@@ -7,11 +7,11 @@ const { ObjectId } = require('mongodb');
 const logger = new Logger(path.basename(__filename));
 const router = express.Router();
 
-router.post('/add', (req, res) => {
+router.post('/add', (_req, res) => {
 	res.render('create', {});
 });
-router.post(/\/edit\/(\w{24})?$/, (req, res) => {
-	logger.info(`Read ${req.params[0]} on db: ${req.body.database}, collection: ${req.body.collection}`);
+router.put(/\/edit\/(\w{24})?$/, (req, res) => {
+	logger.info(`Edit ${req.params[0]} on db: ${req.body.database}, collection: ${req.body.collection}`);
 	req.user.db.db(req.body.database).collection(req.body.collection).findOne({_id: ObjectId(req.params[0])}, function(err, docs){
 		if(err){
 			logger.error(err);

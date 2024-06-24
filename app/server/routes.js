@@ -2,7 +2,11 @@ const express = require('express');
 const Logger = require('log-ng');
 const path = require('path');
 const config = require('./config');
-const { parseDBCollDoc, parseMongoQuery } = require('./routeHelpers');
+const {
+	filterAdmin,
+	parseDBCollDoc,
+	parseMongoQuery
+} = require('./routeHelpers');
 
 const logger = new Logger(path.basename(__filename));
 const router = express.Router();
@@ -37,7 +41,8 @@ router.use('/logout', (req, res, next) => {
 		res.redirect('/');
 	});
 });
-router.use('/ui', require('./ui'));
+
+router.use('/ui', filterAdmin, require('./ui'));
 router.use('/users', require('./users'));
 
 const docRouter = express.Router({ mergeParams: true});
