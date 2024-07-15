@@ -8,6 +8,7 @@ node esbuild.mjs
 if [[ -z "$1" || "$1" -ne spa ]]; then
 	echo Full build
 	cp -R app/server/ dist/server/
+	cp .env dist/
 else
 	echo SPA build
 fi
@@ -16,5 +17,9 @@ if [ -d "app/client/images" ] && [ -n "app/client/images/*" ]; then
    cp -R app/client/images dist/client/
 fi
 jq '{name: .name, description: .description, version: .version, dependencies: .dependencies}' package.json > dist/package.json
-cp package-lock.json .env dist/
+if [ "$NODE_ENV" = "production" ]; then
+	npm --prefix dist update --package-lock-only
+else
+	cp package-lock.json dist/
+fi
 echo Build complete

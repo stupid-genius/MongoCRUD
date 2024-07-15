@@ -29,7 +29,9 @@ router.get('/:id?', (req, res) => {
 				password: Object.keys(rec.credentials)
 			}));
 		logger.debug(JSON.stringify(req.headers));
-		if(req.get('x-ui') === 'list-only'){
+		if(req.get('accept') === 'application/json'){
+			return res.send(users);
+		}else if(req.get('x-ui') === 'list-only'){
 			logger.debug('rendering user list only');
 			res.render('dataTable', {
 				baseURL: '/users',
@@ -104,11 +106,17 @@ router.put('/edit/:id', (req, res) => {
 router.put('/:id', (req, res) => {
 	const userId = req.params.id;
 	logger.info(`Updating user: ${userId}`);
+	const body = JSON.stringify(req.body);
+	if(body === '{}'){
+		logger.debug('no updates');
+		res.status(400).end('No updates');
+		return;
+	}
 	logger.debug(`with updates: ${JSON.stringify(req.body)}`);
 
 	getUsers(req.user.db, userId).then(async (user) => {
-		const {database, pwd} = req.body;
-		const roles = JSON.parse(req.body.roles);
+		const {database, password: pwd} = req.body;
+		const roles = JSON.parse(req.body.roles ?? null);
 		const updates = {};
 		if(pwd !== undefined && pwd != ''){
 			logger.debug('updating password');
@@ -122,7 +130,7 @@ router.put('/:id', (req, res) => {
 			logger.debug(`updating database: ${user.db} -> ${database}`);
 			updates.db = database;
 		}
-		if(roles !== undefined && !arraysEqual(roles, user.roles)){
+		if(roles !== null && !arraysEqual(roles, user.roles)){
 			logger.debug(`updating roles: ${JSON.stringify(user.roles)} -> ${JSON.stringify(roles)}`);
 			updates.roles = roles;
 		}
