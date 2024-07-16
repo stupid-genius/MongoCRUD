@@ -3,11 +3,11 @@
 	<head>
 		<meta charset="UTF-8">
 		<title><%- title %></title>
-		<% include bundle %>
+		<%- include('bundle') %>
 	</head>
 	<body>
 		<section id="header">
-			<% include header %>
+			<%- include('header') %>
 		</section>
 
 		<section id="main">
@@ -34,7 +34,7 @@
 		</section>
 
 		<section id="footer">
-			<% include footer %>
+			<%- include('footer') %>
 		</section>
 	</body>
 </html>
