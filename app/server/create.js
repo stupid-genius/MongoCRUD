@@ -8,11 +8,13 @@ module.exports = function(req, res){
 	logger.info(`Create on db: ${db}, collection: ${collection}`);
 	logger.debug(`body: ${JSON.stringify(req.body)}`);
 	req.user.db.db(db).collection(collection).insertOne(req.body, function(err, result){
+		req.user.db.close();
 		if(err){
 			logger.error(err);
+			res.status(500).send({ error: 'Create failed', details: err });
+		}else{
+			logger.debug(`successfully created: ${JSON.stringify(result)}`);
+			res.send(result);
 		}
-		req.user.db.close();
-		logger.debug(`successfully created: ${JSON.stringify(result)}`);
-		res.send(result);
 	});
 };

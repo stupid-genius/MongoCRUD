@@ -18,7 +18,11 @@ tr{
 	border: 1px solid black;
 }
 th, td{
-	padding: .25em .75em;
+	overflow: hidden;
+	padding: .25em 1em;
+}
+th{
+	width: 4%;
 }
 td > input{
 	/* margin: 0; */
@@ -71,4 +75,13 @@ textarea{
 #dataTable{
 	padding: 1em;
 }
-
+#dataTable > table{
+	table-layout: fixed;
+	width: 100%;
+	white-space: nowrap;
+}
+td:nth-last-child(2),
+td:last-child{
+	width: 3%;
+	/* white-space: nowrap; */
+}

@@ -2,7 +2,6 @@ const { ObjectId } = require('mongodb');
 const Logger = require('log-ng');
 const path = require('path');
 
-/* eslint-disable-next-line no-undef */
 const logger = new Logger(path.basename(__filename));
 
 module.exports = function(req, res){
@@ -17,14 +16,13 @@ module.exports = function(req, res){
 	}
 	logger.debug(`selector: ${JSON.stringify(selector)}`);
 	req.user.db.db(db).collection(collection).deleteOne(selector, function(err, result){
+		req.user.db.close();
 		if(err){
 			logger.error(err);
-			req.user.db.close();
-			res.end();
-			return;
+			res.status(500).send({ error: 'Delete failed', details: err });
+		}else{
+			logger.debug(`successfully deleted: ${JSON.stringify(result)}`);
+			res.send(result);
 		}
-		req.user.db.close();
-		logger.debug(`successfully deleted: ${JSON.stringify(result)}`);
-		res.send(result);
 	});
 };

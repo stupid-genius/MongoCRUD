@@ -19,13 +19,13 @@ module.exports = function(req, res){
 	// http://docs.mongodb.org/manual/reference/method/db.collection.update/#examples
 	// req.user.db.db(db).collection(collection).updateOne(selector, {$set: req.body[1]}, req.body[2], function(err, result){
 	req.user.db.db(db).collection(collection).replaceOne(selector, req.body, {upsert: false}, function(err, result){
+		req.user.db.close();
 		if(err){
 			logger.error(err);
 			res.status(500).send({ error: 'Update failed', details: err });
-			return;
+		}else{
+			logger.info(`successfully updated: ${JSON.stringify(result)}`);
+			res.send(result);
 		}
-		req.user.db.close();
-		logger.info(`successfully updated: ${JSON.stringify(result)}`);
-		res.send(result);
 	});
 };

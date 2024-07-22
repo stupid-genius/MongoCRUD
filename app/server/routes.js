@@ -42,7 +42,7 @@ router.use('/logout', (req, res, next) => {
 	});
 });
 
-router.use('/ui', filterAdmin, require('./ui'));
+router.use('/ui/', filterAdmin, require('./ui'));
 router.use('/users', require('./users'));
 
 const docRouter = express.Router({ mergeParams: true});

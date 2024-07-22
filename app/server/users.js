@@ -85,103 +85,103 @@ router.post('/', async (req, res) => {
 		res.status(500).send(e);
 	}
 });
-// for UI; maybe use accept header and merge
-router.put('/edit/:id', (req, res) => {
-	logger.info(`Editing user: ${req.params.id}`);
-	getUsers(req.user.db, req.params.id).then((user) => {
-		const context = {
-			database: user.db,
-			roles: JSON.stringify(user.roles),
-			username: user.user
-		};
-		res.render('userEdit', context);
-	}).catch((err) => {
-		logger.error(err);
-		res.status(500).end(err);
-		return;
-	}).finally(() => {
-		req.user.db.close();
-	});
-});
 router.put('/:id', (req, res) => {
-	const userId = req.params.id;
-	logger.info(`Updating user: ${userId}`);
-	const body = JSON.stringify(req.body);
-	if(body === '{}'){
-		logger.debug('no updates');
-		res.status(400).end('No updates');
-		return;
-	}
-	logger.debug(`with updates: ${JSON.stringify(req.body)}`);
-
-	getUsers(req.user.db, userId).then(async (user) => {
-		const {database, password: pwd} = req.body;
-		const roles = JSON.parse(req.body.roles ?? null);
-		const updates = {};
-		if(pwd !== undefined && pwd != ''){
-			logger.debug('updating password');
-			const result = await req.user.db.db('admin').command({
-				updateUser: userId,
-				pwd
-			});
-			logger.info(JSON.stringify(result));
-		}
-		if(database !== undefined && database !== user.db){
-			logger.debug(`updating database: ${user.db} -> ${database}`);
-			updates.db = database;
-		}
-		if(roles !== null && !arraysEqual(roles, user.roles)){
-			logger.debug(`updating roles: ${JSON.stringify(user.roles)} -> ${JSON.stringify(roles)}`);
-			updates.roles = roles;
-		}
-
-		if(Object.keys(updates).length === 0){
-			const user = await getUsers(req.user.db, userId);
-			res.render('dataRow', {
-				baseURL: '/users',
-				id: user.user,
-				row: {
-					username: user.user,
-					database: user.db,
-					roles: JSON.stringify(user.roles),
-					password: Object.keys(user.credentials)
-				}
-			});
+	if(req.get('x-ui') === 'edit-row'){
+		logger.info(`Editing user: ${req.params.id}`);
+		getUsers(req.user.db, req.params.id).then((user) => {
+			const context = {
+				database: user.db,
+				roles: JSON.stringify(user.roles),
+				username: user.user
+			};
+			res.render('userEdit', context);
+		}).catch((err) => {
+			logger.error(err);
+			res.status(500).end(err);
+			return;
+		}).finally(() => {
+			req.user.db.close();
+		});
+	}else{
+		const userId = req.params.id;
+		logger.info(`Updating user: ${userId}`);
+		const body = JSON.stringify(req.body);
+		if(body === '{}'){
+			logger.debug('no updates');
+			res.status(400).end('No updates');
 			return;
 		}
+		logger.debug(`with updates: ${JSON.stringify(req.body)}`);
 
-		logger.debug(JSON.stringify(updates));
-		try{
-			const result = await req.user.db.db('admin').collection('system.users').updateOne({ user: userId }, {$set: updates});
-			if(result.modifiedCount === 1){
-				logger.info(`Successfully updated: ${JSON.stringify(result)}`);
-			}else{
-				logger.debug(`Update result: ${JSON.stringify(result)}`);
+		getUsers(req.user.db, userId).then(async (user) => {
+			const {database, password: pwd} = req.body;
+			const roles = JSON.parse(req.body.roles ?? null);
+			const updates = {};
+			if(pwd !== undefined && pwd != ''){
+				logger.debug('updating password');
+				const result = await req.user.db.db('admin').command({
+					updateUser: userId,
+					pwd
+				});
+				logger.info(JSON.stringify(result));
 			}
-			const user = await getUsers(req.user.db, userId);
-			res.render('dataRow', {
-				baseURL: '/users',
-				id: user.user,
-				row: {
-					username: user.user,
-					database: user.db,
-					roles: JSON.stringify(user.roles),
-					password: Object.keys(user.credentials)
+			if(database !== undefined && database !== user.db){
+				logger.debug(`updating database: ${user.db} -> ${database}`);
+				updates.db = database;
+			}
+			if(roles !== null && !arraysEqual(roles, user.roles)){
+				logger.debug(`updating roles: ${JSON.stringify(user.roles)} -> ${JSON.stringify(roles)}`);
+				updates.roles = roles;
+			}
+
+			if(Object.keys(updates).length === 0){
+				const user = await getUsers(req.user.db, userId);
+				res.render('dataRow', {
+					baseURL: '/users',
+					id: user.user,
+					row: {
+						username: user.user,
+						database: user.db,
+						roles: JSON.stringify(user.roles),
+						password: Object.keys(user.credentials)
+					}
+				});
+				return;
+			}
+
+			logger.debug(JSON.stringify(updates));
+			try{
+				const result = await req.user.db.db('admin').collection('system.users').updateOne({ user: userId }, {$set: updates});
+				if(result.modifiedCount === 1){
+					logger.info(`Successfully updated: ${JSON.stringify(result)}`);
+				}else{
+					logger.debug(`Update result: ${JSON.stringify(result)}`);
 				}
-			});
-		}catch(e){
-			if(e){
-				logger.error(e);
+				const user = await getUsers(req.user.db, userId);
+				res.render('dataRow', {
+					baseURL: '/users',
+					id: user.user,
+					row: {
+						username: user.user,
+						database: user.db,
+						roles: JSON.stringify(user.roles),
+						password: Object.keys(user.credentials)
+					}
+				});
+			}catch(e){
+				if(e){
+					logger.error(e);
+				}
+			}finally{
+				req.user.db.close();
 			}
-		}finally{
+		}).catch((err) => {
+			logger.error(err);
+			res.status(500).end(err);
 			req.user.db.close();
-		}
-	}).catch((err) => {
-		logger.error(err);
-		res.status(500).end(err);
-		req.user.db.close();
-		return;
-	});
+			return;
+		});
+	}
 });
 router.delete('/:id', async (req, res) => {
 	const id = req.params.id;

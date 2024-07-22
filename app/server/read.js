@@ -16,14 +16,13 @@ module.exports = function(req, res){
 	}
 	logger.debug(`selector: ${JSON.stringify(selector)}`);
 	req.user.db.db(db).collection(collection).find(selector).toArray(function(err, result){
+		req.user.db.close();
 		if(err){
 			logger.error(err);
-			req.user.db.close();
-			res.end();
-			return;
+			res.status(500).send({ error: 'Read failed', details: err });
+		}else{
+			logger.debug(`successfully found: ${JSON.stringify(result)}`);
+			res.send(result);
 		}
-		req.user.db.close();
-		logger.debug(`successfully found: ${JSON.stringify(result)}`);
-		res.send(result);
 	});
 };
